@@ -35,6 +35,7 @@ app.use("/api/reports", require("./routes/reportRoutes"));
 app.use("/api/dashboard", require("./routes/dashboardRoutes"));
 app.use("/api/staff", require("./routes/staffRoutes.js"));
 app.use("/api/profile", require("./routes/profileRoutes"));
+app.use("/api/notifications", require("./routes/notificationRoutes"));
 
 app.listen(port, () => {
   console.log(`🚀 Server started on port ${port}`);
