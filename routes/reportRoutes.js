@@ -14,6 +14,7 @@ router.get("/", async (req, res) => {
       "Agric",
       "WATSAN",
       "Works",
+      "Treasury",
     ];
 
     const stats = await Promise.all(
