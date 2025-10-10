@@ -19,7 +19,16 @@ const notificationSchema = new mongoose.Schema(
     },
     target: {
       type: String,
-      enum: ["all", "Personnel", "PHCC", "ESSD", "Agric", "WATSAN", "Works"],
+      enum: [
+        "all",
+        "Personnel",
+        "PHCC",
+        "ESSD",
+        "Agric",
+        "WATSAN",
+        "Works",
+        "Treasury",
+      ],
       default: "all",
     },
     admin: {

@@ -97,10 +97,72 @@ const deleteFile = async (req, res) => {
   }
 };
 
+// Get dashboard stats
+const getDashboardStats = async (req, res) => {
+  try {
+    const totalStaff = await File.countDocuments();
+    const filesCollected = await File.countDocuments({ collected: true });
+    const filesReturned = await File.countDocuments({ returned: true });
+    const pendingReturns = await File.countDocuments({
+      collected: true,
+      returned: false,
+    });
+
+    res.json({
+      totalStaff,
+      filesCollected,
+      filesReturned,
+      pendingReturns,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get recent activities with dates
+const getRecentActivities = async (req, res) => {
+  try {
+    const recentFiles = await File.find().sort({ createdAt: -1 }).limit(10);
+
+    const activities = recentFiles.map((file) => {
+      let action = "File created";
+      let status = "pending";
+      let date = "No date";
+
+      if (file.returned && file.returningDate) {
+        action = "File returned";
+        status = "returned";
+        date = file.returningDate;
+      } else if (file.collected && file.collectionDate) {
+        action = "File collected";
+        status = "collected";
+        date = file.collectionDate;
+      } else if (file.collected) {
+        action = "File collected";
+        status = "collected";
+        date = "No date";
+      }
+
+      return {
+        name: file.staffName,
+        action: action,
+        status: status,
+        date: date,
+      };
+    });
+
+    res.json({ activities });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createFile,
   getFiles,
   getFileById,
   updateFile,
   deleteFile,
+  getDashboardStats,
+  getRecentActivities,
 };

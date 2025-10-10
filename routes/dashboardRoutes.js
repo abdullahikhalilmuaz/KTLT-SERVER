@@ -6,10 +6,8 @@ const router = express.Router();
 router.get("/stats", async (req, res) => {
   try {
     const totalStaff = await File.countDocuments();
-
     const filesCollected = await File.countDocuments({ collected: true });
     const filesReturned = await File.countDocuments({ returned: true });
-
     const pendingReturns = filesCollected - filesReturned;
 
     res.json({
@@ -28,20 +26,37 @@ router.get("/stats", async (req, res) => {
 router.get("/recent", async (req, res) => {
   try {
     const recentActivities = await File.find()
-      .sort({ updatedAt: -1 }) // assumes timestamps: true in schema
+      .sort({ _id: -1 }) // Sort by latest created (using _id since no createdAt)
       .limit(5);
 
-    // Map into frontend-friendly format
-    const activities = recentActivities.map((f) => ({
-      name: f.staffName,
-      action: f.returned
-        ? "File returned"
-        : f.collected
-        ? "File collected"
-        : "File created",
-      date: f.updatedAt,
-      status: f.returned ? "returned" : f.collected ? "collected" : "pending",
-    }));
+    // Map into frontend-friendly format with proper dates
+    const activities = recentActivities.map((file) => {
+      let action = "File created";
+      let status = "pending";
+      let date = "No date";
+
+      // Use returningDate if file is returned, otherwise collectionDate if collected
+      if (file.returned && file.returningDate) {
+        action = "File returned";
+        status = "returned";
+        date = file.returningDate;
+      } else if (file.collected && file.collectionDate) {
+        action = "File collected";
+        status = "collected";
+        date = file.collectionDate;
+      } else if (file.collected) {
+        action = "File collected";
+        status = "collected";
+        date = "No date";
+      }
+
+      return {
+        name: file.staffName,
+        action: action,
+        status: status,
+        date: date,
+      };
+    });
 
     res.json({ activities });
   } catch (err) {
